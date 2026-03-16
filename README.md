@@ -1,4 +1,4 @@
-# shopify_product_2025
+# Shopify_trend_product_2025
 
 ## Project overview
 This project analyze 'The shopify trend products 2025' using SQLite, Power BI.
