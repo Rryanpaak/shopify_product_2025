@@ -26,7 +26,7 @@ Data source: https://www.kaggle.com/datasets/zulqarnain11/shopify-trending-produ
 - SQlite: Used sqlite for data aggregation and query building
 - Power BI: For dashboard development
 
-## Data Process
+## Analysis Process
 
 
 ## Key metrics
