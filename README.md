@@ -12,7 +12,11 @@ The dashboard focuses on the category overview and dive into sub-category such a
 
 ## Dataset
 The Dataset contains Shopify trend products in 2025
-Data source: https://www.kaggle.com/datasets/zulqarnain11/shopify-trending-products-2025
+- **Dataset**: Shopify Trending Products 2025
+- **Author**: zulqarnain Haider
+- **Platform**: Kaggle
+- **License**: Apache License 2.0
+- **Link**: https://www.kaggle.com/datasets/zulqarnain11/shopify-trending-products-2025
 
 ### columns
 - Category
