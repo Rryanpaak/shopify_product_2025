@@ -36,7 +36,9 @@ Data source: https://www.kaggle.com/datasets/zulqarnain11/shopify-trending-produ
 
 ## Key metrics
 total_sold = Estimated_Total_Units_Sold_in_2025
+
 total_revenue = Estimated_Revenue_in_2025_USD
+
 ASP(Average Selling Price) = total_revenue / total_sold
 
 ## Dashboard structure
