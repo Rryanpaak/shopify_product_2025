@@ -175,7 +175,7 @@ from cat_share
 where pr_asp >= 0.80
 order by asp desc;
 
-## Deep down into sub-category 'Eco-Friendly'
+## Deep down into category, 'Eco-Friendly'
 
 -- Make an list of Eco-Friendly
 SELECT DISTINCT
@@ -195,3 +195,149 @@ from shopify_trending_2025
 where Category = 'Eco-Friendly'
 group by Category, Subcategory
 ORDER by total_sold desc;
+
+-- Which products take high trend score
+
+SELECT
+	Category,
+	Subcategory,
+	Trend_Score
+from shopify_trending_2025
+where Category = 'Eco-Friendly'
+group by Category, Subcategory
+ORDER by Trend_Score desc;
+
+-- Find out the share and asp in Eco-Friendly
+with cat_asp as (
+	SELECT
+		Category,
+		Subcategory,
+		sum(Estimated_Total_Units_Sold_in_2025) as total_sold,
+		sum(Estimated_Revenue_in_2025_USD) as total_revenue,
+		round(1.0 * sum(Estimated_Revenue_in_2025_USD) / sum(Estimated_Total_Units_Sold_in_2025),2) as asp
+	from shopify_trending_2025
+	where Category = 'Eco-Friendly'
+	group by Category, Subcategory
+)
+SELECT
+	Category,
+	Subcategory,
+	round(1.0 * total_sold / sum(total_sold) over(),2) * 100 as share_sold,
+	round(1.0 * total_revenue / sum(total_revenue) over(),2) * 100 as share_revenue,
+	asp
+from cat_asp
+order by asp desc;
+
+## Deep down into the category, 'Digital Goods'
+
+-- List of the sub-category in Digital Goods
+	
+SELECT DISTINCT
+	Category,
+	Subcategory
+from shopify_trending_2025
+WHERE Category = 'Digital Goods'
+
+-- Unlike the category 'Eco-Friendly', Figured out the results such as total_sold, total_revenue, asp, share of sales and revenue in one time.
+With cat_digi as (
+	SELECT
+		Category,
+		Subcategory,
+		sum(Estimated_Total_Units_Sold_in_2025) as total_sold,
+		sum(Estimated_Revenue_in_2025_USD) as total_revenue,
+		round(1.0 * sum(Estimated_Revenue_in_2025_USD) / sum(Estimated_Total_Units_Sold_in_2025),2) as asp
+	from shopify_trending_2025
+	where Category = 'Digital Goods'
+	GROUP by Category, Subcategory
+),
+share_cat as (
+	SELECT
+		Category,
+		Subcategory,
+		total_sold,
+		round(1.0 * total_sold / sum(total_sold) over(),2) as share_sold,
+		total_revenue,
+		round(1.0 * total_revenue / sum(total_revenue) over(),2) as share_revenue,
+		asp
+	from cat_digi
+)
+SELECT
+	Category,
+	Subcategory,
+	total_sold,
+	share_sold,
+	total_revenue,
+	share_revenue,
+	asp
+from share_cat
+order by total_sold desc;
+		
+-- Find out the opportunity by figuring out the percentage of total_revenue and asp
+With sub_cat as (
+	SELECT
+		Category,
+		Subcategory,
+		sum(Estimated_Total_Units_Sold_in_2025) as total_sold,
+		sum(Estimated_Revenue_in_2025_USD) as total_revenue,
+		round(1.0 * sum(Estimated_Revenue_in_2025_USD) / sum(Estimated_Total_Units_Sold_in_2025),2) as asp
+	from shopify_trending_2025
+	where Category = 'Eco-Friendly'
+	group by Category, Subcategory
+),
+cat_share as (
+	SELECT
+		s.*,
+		round(1.0 * total_sold / sum(total_sold)over(),2) as share_sold,
+		round(1.0 * total_revenue / sum(total_revenue) over(),2) as share_revenue
+	from sub_cat s
+),
+cat_rank as (
+	SELECT
+		c.*,
+		percent_rank () over(PARTITION by Category ORDER by share_revenue) as per_revenue,
+		percent_rank () over(PARTITION by Category ORDER by asp) as per_asp
+	from cat_share c
+)
+SELECT
+	Category,
+	Subcategory,
+	total_sold,
+	share_sold,
+	total_revenue,
+	share_revenue,
+	asp,
+	per_revenue,
+	per_asp,
+	case
+		when per_revenue >= 0.50 and per_asp >= 0.80 then 'High Share + High ASP'
+		when per_revenue >= 0.50 and per_asp < 0.80 then 'High Share + Low ASP'
+		when per_revenue < 0.50 and per_asp >= 0.80 then 'Low Share + High ASP'
+		ELSE 'LOW Share + Low ASP'
+	end as quadrant
+from cat_rank
+order by quadrant, per_revenue desc, asp desc;
+
+
+## Made the views for Power BI
+
+drop view if exists vw_sub_base;
+
+create view vw_sub_digital_goods_base as
+with sub_base as (
+SELECT
+	Category,
+	Subcategory,
+	sum(Estimated_Total_Units_Sold_in_2025) as total_sold,
+	sum(Estimated_Revenue_in_2025_USD) as total_revenue
+from shopify_trending_2025
+where Category = 'Digital Goods'
+group by Category, Subcategory
+)
+SELECT
+	Category,
+	Subcategory,
+	total_sold,
+	total_revenue,
+	round(1.0 * total_revenue / total_sold ,2) as asp
+from sub_base
+order by asp desc;
